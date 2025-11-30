@@ -517,7 +517,7 @@ export default function HomePage() {
                                     >
                                         <div className="flex justify-between items-start">
                                             <span className={cn(
-                                                "text-lg font-bold w-8 h-8 flex items-center justify-center rounded-full",
+                                                "text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full",
                                                 cell.isToday
                                                     ? "bg-[#f97316] text-white shadow-md shadow-orange-200"
                                                     : "text-foreground/70"
