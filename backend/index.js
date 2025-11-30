@@ -20,6 +20,8 @@ const { connectDB } = require('./config/db');
 // Connect to MongoDB
 connectDB();
 
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
 app.use('/api/events', eventRoutes);
 
 app.listen(PORT, () => {

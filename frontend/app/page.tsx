@@ -1,6 +1,11 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-slate-900 to-gray-900 text-slate-100">
       {/* Subtle decorative layers */}
@@ -42,16 +47,16 @@ export default function Home() {
             </p>
 
             <div className="mt-10 flex justify-center">
-              <a
-                href="/home"
+              <button
+                onClick={() => router.push("/home")}
                 className="inline-flex items-center justify-center rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-transform text-black font-semibold px-8 py-3 text-base shadow-lg shadow-emerald-700/30"
                 aria-label="Get Started with DaySync"
               >
                 Get Started
-              </a>
+              </button>
             </div>
 
-            
+
           </div>
         </section>
       </main>

@@ -1,9 +1,43 @@
 {
+  "name": "daysync-smart-calendar",
+  "version": "0.1.0",
+  "description": "DaySync Smart Calendar App",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev:backend": "cd backend && npx nodemon index.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npx concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:electron": "cross-env ELECTRON_DEV=1 npx concurrently \"npm:dev:backend\" \"npm:dev:frontend\" \"npx electron .\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:frontend && electron-builder --windows"
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
-    "electron": "^39.2.4",
-    "electron-builder": "^26.0.12",
-    "wait-on": "^9.0.3"
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.daysync.calendar",
+    "files": [
+      "electron/**/*",
+      "frontend/out/**/*",
+      "backend/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      "backend/**"
+    ],
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
   }
 }
