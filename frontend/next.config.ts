@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   assetPrefix: ".",
-  trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },

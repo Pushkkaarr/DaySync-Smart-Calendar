@@ -12,6 +12,10 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
+        autoHideMenuBar: true,
+        icon: isDev
+            ? path.join(__dirname, '..', 'frontend', 'app', 'favicon.ico')
+            : path.join(__dirname, '..', 'frontend', 'out', 'favicon.ico'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,

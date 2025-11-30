@@ -48,7 +48,11 @@ export default function Home() {
 
             <div className="mt-10 flex justify-center">
               <button
-                onClick={() => router.push("/home")}
+                onClick={() => {
+                  const currentPath = window.location.pathname;
+                  const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                  window.location.href = `${basePath}/home.html`;
+                }}
                 className="inline-flex items-center justify-center rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-transform text-black font-semibold px-8 py-3 text-base shadow-lg shadow-emerald-700/30"
                 aria-label="Get Started with DaySync"
               >
