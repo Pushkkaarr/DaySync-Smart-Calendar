@@ -79,7 +79,7 @@ export default function HomePage() {
 
     const fetchEvents = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/events');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`);
             if (res.ok) {
                 const data = await res.json();
                 setEvents(data);
@@ -91,7 +91,7 @@ export default function HomePage() {
 
     const handleSaveEvent = async (eventData: any) => {
         try {
-            const res = await fetch('http://localhost:5000/api/events', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventData),
