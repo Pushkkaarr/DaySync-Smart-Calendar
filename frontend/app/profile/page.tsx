@@ -167,9 +167,17 @@ export default function ProfilePage() {
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
-                    <Link href="/home" className="p-2 hover:bg-accent rounded-full transition-colors">
+                    <span
+                        onClick={() => {
+                            const currentPath = window.location.pathname;
+                            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                            const target = basePath ? `${basePath}/home.html` : '/home';
+                            window.location.href = target;
+                        }}
+                        className="p-2 hover:bg-accent rounded-full transition-colors cursor-pointer"
+                    >
                         <ArrowLeft size={24} />
-                    </Link>
+                    </span>
                     <div>
                         <h1 className="text-3xl font-bold">Edit Profile</h1>
                         <p className="text-muted-foreground">Update your account information</p>

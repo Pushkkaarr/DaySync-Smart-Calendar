@@ -1,10 +1,8 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
 const fs = require('fs');
 
 let mainWindow;
-let backendProcess;
 
 const isDev = process.env.ELECTRON_DEV === '1';
 
@@ -24,10 +22,8 @@ function createWindow() {
     });
 
     if (isDev) {
-        console.log('Loading development URL...');
         mainWindow.loadURL('http://localhost:3000');
     } else {
-        console.log('Loading production file...');
         const indexPath = path.join(__dirname, '..', 'frontend', 'out', 'index.html');
 
         if (!fs.existsSync(indexPath)) {
@@ -40,47 +36,17 @@ function createWindow() {
         });
     }
 
-    // Always open DevTools for debugging
-    mainWindow.webContents.openDevTools();
+    // Open DevTools only in development
+    if (isDev) {
+        mainWindow.webContents.openDevTools();
+    }
 
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
 }
 
-function startBackend() {
-    if (isDev) {
-        console.log('In Dev mode, assuming backend is started via concurrently script.');
-        return;
-    }
-
-    console.log('Starting backend in production mode...');
-    const backendEntry = path.join(__dirname, '..', 'backend', 'index.js');
-    const backendCwd = path.join(__dirname, '..', 'backend');
-
-    if (!fs.existsSync(backendEntry)) {
-        console.error(`Backend entry not found at: ${backendEntry}`);
-        return;
-    }
-
-    backendProcess = spawn('node', [backendEntry], {
-        cwd: backendCwd,
-        stdio: 'ignore', // Ignore stdio to prevent window creation/attachment
-        windowsHide: true, // Explicitly hide the window on Windows
-        env: { ...process.env, PORT: 5000 }
-    });
-
-    backendProcess.on('error', (err) => {
-        console.error('Failed to start backend:', err);
-    });
-
-    backendProcess.on('close', (code) => {
-        console.log(`Backend process exited with code ${code}`);
-    });
-}
-
 app.whenReady().then(() => {
-    startBackend();
     createWindow();
 
     app.on('activate', () => {
@@ -97,8 +63,5 @@ app.on('window-all-closed', () => {
 });
 
 app.on('quit', () => {
-    if (backendProcess) {
-        console.log('Killing backend process...');
-        backendProcess.kill();
-    }
+    // Cleanup if needed
 });

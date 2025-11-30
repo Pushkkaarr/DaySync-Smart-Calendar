@@ -50,7 +50,7 @@ exports.updateEvent = async (req, res) => {
 
         const updatedEvent = await Event.findByIdAndUpdate(
             id,
-            { title, start_time, end_time, color },
+            { title, start_time, end_time, color, updated_at: Date.now() },
             { new: true }
         );
         res.status(200).json(updatedEvent);
@@ -71,6 +71,21 @@ exports.deleteEvent = async (req, res) => {
 
         await Event.findByIdAndDelete(id);
         res.status(200).json({ message: 'Event deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getRecentChanges = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 20;
+
+        // Get recent events sorted by updated_at (most recent first)
+        const recentEvents = await Event.find({ userId: req.user._id })
+            .sort({ updated_at: -1, created_at: -1 })
+            .limit(limit);
+
+        res.status(200).json(recentEvents);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

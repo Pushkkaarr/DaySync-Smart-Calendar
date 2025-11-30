@@ -6,7 +6,8 @@ const eventSchema = new mongoose.Schema({
     start_time: { type: Date, required: true },
     end_time: { type: Date, required: true },
     color: { type: String, default: '#3b82f6' },
-    created_at: { type: Date, default: Date.now }
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Event', eventSchema);

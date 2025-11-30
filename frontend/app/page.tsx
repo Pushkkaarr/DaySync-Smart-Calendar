@@ -19,13 +19,15 @@ export default function Home() {
 
   const handleGetStarted = () => {
     const token = localStorage.getItem('token');
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+
     if (token) {
-      const currentPath = window.location.pathname;
-      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
       const target = basePath ? `${basePath}/home.html` : '/home';
       window.location.href = target;
     } else {
-      router.push('/login');
+      const target = basePath ? `${basePath}/login.html` : '/login';
+      window.location.href = target;
     }
   };
 

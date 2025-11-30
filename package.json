@@ -23,12 +23,7 @@
     "files": [
       "electron/**/*",
       "frontend/out/**/*",
-      "backend/**/*",
-      "node_modules/**/*",
       "package.json"
-    ],
-    "extraResources": [
-      "backend/**"
     ],
     "asar": false,
     "directories": {

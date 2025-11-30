@@ -101,7 +101,10 @@ export default function HomePage() {
                 // Token invalid, redirect to login
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                window.location.href = '/login';
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                const target = basePath ? `${basePath}/login.html` : '/login';
+                window.location.href = target;
             }
         } catch (error) {
             console.error("Failed to fetch events", error);
@@ -131,7 +134,10 @@ export default function HomePage() {
             } else if (res.status === 401) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                window.location.href = '/login';
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                const target = basePath ? `${basePath}/login.html` : '/login';
+                window.location.href = target;
             }
         } catch (error) {
             console.error("Failed to save event", error);
@@ -154,7 +160,10 @@ export default function HomePage() {
             } else if (res.status === 401) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                window.location.href = '/login';
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                const target = basePath ? `${basePath}/login.html` : '/login';
+                window.location.href = target;
             }
         } catch (error) {
             console.error("Failed to delete event", error);
@@ -307,9 +316,17 @@ export default function HomePage() {
                         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
                             <CalendarIcon size={18} />
                         </div>
-                        <Link href="/" className="font-bold text-lg tracking-tight whitespace-nowrap hover:text-primary transition-colors">
+                        <span
+                            onClick={() => {
+                                const currentPath = window.location.pathname;
+                                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                                const target = basePath ? `${basePath}/index.html` : '/';
+                                window.location.href = target;
+                            }}
+                            className="font-bold text-lg tracking-tight whitespace-nowrap hover:text-primary transition-colors cursor-pointer"
+                        >
                             DaySync
-                        </Link>
+                        </span>
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -411,7 +428,10 @@ export default function HomePage() {
                         {/* Edit Profile Button */}
                         <button
                             onClick={() => {
-                                window.location.href = '/profile';
+                                const currentPath = window.location.pathname;
+                                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                                const target = basePath ? `${basePath}/profile.html` : '/profile';
+                                window.location.href = target;
                             }}
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 hover:bg-accent text-muted-foreground hover:text-foreground group",
@@ -432,7 +452,10 @@ export default function HomePage() {
                             onClick={() => {
                                 localStorage.removeItem('token');
                                 localStorage.removeItem('user');
-                                window.location.href = '/';
+                                const currentPath = window.location.pathname;
+                                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                                const target = basePath ? `${basePath}/index.html` : '/';
+                                window.location.href = target;
                             }}
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 hover:bg-red-500/10 text-red-500 hover:text-red-600 group",

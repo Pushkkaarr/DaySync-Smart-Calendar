@@ -146,9 +146,17 @@ export default function SignupPage() {
                         <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-10 border border-white/[0.05] shadow-2xl overflow-hidden">
 
                             {/* Back Button */}
-                            <Link href="/" className="absolute top-6 left-6 text-white/60 hover:text-white transition-colors text-base">
+                            <span
+                                onClick={() => {
+                                    const currentPath = window.location.pathname;
+                                    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                                    const target = basePath ? `${basePath}/index.html` : '/';
+                                    window.location.href = target;
+                                }}
+                                className="absolute top-6 left-6 text-white/60 hover:text-white transition-colors text-base cursor-pointer"
+                            >
                                 ← Back
-                            </Link>
+                            </span>
 
                             {/* Logo and header */}
                             <div className="text-center space-y-2 mb-8 mt-10">
@@ -349,14 +357,19 @@ export default function SignupPage() {
                                     transition={{ delay: 0.5 }}
                                 >
                                     Already have an account?{' '}
-                                    <Link
-                                        href="/login"
-                                        className="relative inline-block group/signup"
+                                    <span
+                                        onClick={() => {
+                                            const currentPath = window.location.pathname;
+                                            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                                            const target = basePath ? `${basePath}/login.html` : '/login';
+                                            window.location.href = target;
+                                        }}
+                                        className="relative inline-block group/signup cursor-pointer"
                                     >
                                         <span className="relative z-10 text-white group-hover/signup:text-white/70 transition-colors duration-300 font-medium">
                                             Sign in
                                         </span>
-                                    </Link>
+                                    </span>
                                 </motion.p>
                             </form>
                         </div>

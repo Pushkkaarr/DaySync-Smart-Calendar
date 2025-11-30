@@ -6,6 +6,7 @@ const { protect } = require('../middleware/auth');
 // All event routes require authentication
 router.post('/', protect, eventController.createEvent);
 router.get('/', protect, eventController.getEvents);
+router.get('/recent', protect, eventController.getRecentChanges);
 router.put('/:id', protect, eventController.updateEvent);
 router.delete('/:id', protect, eventController.deleteEvent);
 
