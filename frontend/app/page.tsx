@@ -1,10 +1,33 @@
 "use client";
-
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      const target = basePath ? `${basePath}/home.html` : '/home';
+      window.location.href = target;
+    }
+  }, []);
+
+  const handleGetStarted = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      const target = basePath ? `${basePath}/home.html` : '/home';
+      window.location.href = target;
+    } else {
+      router.push('/login');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-slate-900 to-gray-900 text-slate-100">
@@ -48,11 +71,7 @@ export default function Home() {
 
             <div className="mt-10 flex justify-center">
               <button
-                onClick={() => {
-                  const currentPath = window.location.pathname;
-                  const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                  window.location.href = `${basePath}/home.html`;
-                }}
+                onClick={handleGetStarted}
                 className="inline-flex items-center justify-center rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-transform text-black font-semibold px-8 py-3 text-base shadow-lg shadow-emerald-700/30"
                 aria-label="Get Started with DaySync"
               >

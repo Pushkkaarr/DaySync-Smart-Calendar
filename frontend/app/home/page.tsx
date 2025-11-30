@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
     ChevronLeft,
     ChevronRight,
@@ -13,6 +14,8 @@ import {
     Sun,
     ChevronDown,
     Plus,
+    LogOut,
+    User,
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -80,11 +83,25 @@ export default function HomePage() {
 
     const fetchEvents = async () => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setEvents(data);
+            } else if (res.status === 401) {
+                // Token invalid, redirect to login
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
             }
         } catch (error) {
             console.error("Failed to fetch events", error);
@@ -93,6 +110,9 @@ export default function HomePage() {
 
     const handleSaveEvent = async (eventData: any) => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
             const method = eventData._id ? 'PUT' : 'POST';
             const url = eventData._id
                 ? `${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventData._id}`
@@ -100,11 +120,18 @@ export default function HomePage() {
 
             const res = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(eventData),
             });
             if (res.ok) {
                 fetchEvents(); // Refresh events
+            } else if (res.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
             }
         } catch (error) {
             console.error("Failed to save event", error);
@@ -113,11 +140,21 @@ export default function HomePage() {
 
     const handleDeleteEvent = async (eventId: string) => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             if (res.ok) {
                 fetchEvents();
+            } else if (res.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
             }
         } catch (error) {
             console.error("Failed to delete event", error);
@@ -270,7 +307,9 @@ export default function HomePage() {
                         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
                             <CalendarIcon size={18} />
                         </div>
-                        <span className="font-bold text-lg tracking-tight whitespace-nowrap">DaySync</span>
+                        <Link href="/" className="font-bold text-lg tracking-tight whitespace-nowrap hover:text-primary transition-colors">
+                            DaySync
+                        </Link>
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -366,6 +405,46 @@ export default function HomePage() {
                                 !isSidebarOpen && "opacity-0 translate-x-4 absolute"
                             )}>
                                 {theme === 'light' ? "Dark Mode" : "Light Mode"}
+                            </span>
+                        </button>
+
+                        {/* Edit Profile Button */}
+                        <button
+                            onClick={() => {
+                                window.location.href = '/profile';
+                            }}
+                            className={cn(
+                                "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 hover:bg-accent text-muted-foreground hover:text-foreground group",
+                                !isSidebarOpen && "justify-center"
+                            )}
+                        >
+                            <User size={20} />
+                            <span className={cn(
+                                "font-medium transition-all duration-300 whitespace-nowrap",
+                                !isSidebarOpen && "opacity-0 translate-x-4 absolute"
+                            )}>
+                                Edit Profile
+                            </span>
+                        </button>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                                window.location.href = '/';
+                            }}
+                            className={cn(
+                                "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 hover:bg-red-500/10 text-red-500 hover:text-red-600 group",
+                                !isSidebarOpen && "justify-center"
+                            )}
+                        >
+                            <LogOut size={20} />
+                            <span className={cn(
+                                "font-medium transition-all duration-300 whitespace-nowrap",
+                                !isSidebarOpen && "opacity-0 translate-x-4 absolute"
+                            )}>
+                                Logout
                             </span>
                         </button>
                     </div>
