@@ -29,6 +29,13 @@ interface EventModalProps {
     initialEvent?: any;
 }
 
+const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export default function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, initialEvent }: EventModalProps) {
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
@@ -42,12 +49,12 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                 setTitle(initialEvent.title);
                 const startDate = new Date(initialEvent.start_time);
                 const endDate = new Date(initialEvent.end_time);
-                setDate(startDate.toISOString().split('T')[0]);
+                setDate(formatDate(startDate));
                 setStartTime(startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
                 setEndTime(endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
                 setColor(initialEvent.color);
             } else if (initialDate) {
-                setDate(initialDate.toISOString().split('T')[0]);
+                setDate(formatDate(initialDate));
                 setTitle('');
                 setStartTime('09:00');
                 setEndTime('10:00');

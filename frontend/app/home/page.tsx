@@ -80,6 +80,7 @@ export default function HomePage() {
 
     const fetchEvents = async () => {
         try {
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`);
             if (res.ok) {
                 const data = await res.json();
