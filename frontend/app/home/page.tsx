@@ -491,7 +491,7 @@ export default function HomePage() {
                         <>
                             <div className="grid grid-cols-7 mb-4">
                                 {DAYS_OF_WEEK.map(day => (
-                                    <div key={day} className="text-center text-sm font-bold text-muted-foreground uppercase tracking-wider py-2">
+                                    <div key={day} className="text-center text-sm font-bold text-muted-foreground uppercase tracking-wider py-2 bg-primary/20 rounded-lg">
                                         {day}
                                     </div>
                                 ))}
