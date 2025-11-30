@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Calendar as CalendarIcon, Check } from 'lucide-react';
+import { X, Clock, Calendar as CalendarIcon, Check, Trash2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -24,10 +24,12 @@ interface EventModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (eventData: any) => void;
+    onDelete?: (eventId: string) => void;
     initialDate?: Date;
+    initialEvent?: any;
 }
 
-export default function EventModal({ isOpen, onClose, onSave, initialDate }: EventModalProps) {
+export default function EventModal({ isOpen, onClose, onSave, onDelete, initialDate, initialEvent }: EventModalProps) {
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
     const [startTime, setStartTime] = useState('09:00');
@@ -35,34 +37,51 @@ export default function EventModal({ isOpen, onClose, onSave, initialDate }: Eve
     const [color, setColor] = useState(COLORS[0]);
 
     useEffect(() => {
-        if (isOpen && initialDate) {
-            setDate(initialDate.toISOString().split('T')[0]);
+        if (isOpen) {
+            if (initialEvent) {
+                setTitle(initialEvent.title);
+                const startDate = new Date(initialEvent.start_time);
+                const endDate = new Date(initialEvent.end_time);
+                setDate(startDate.toISOString().split('T')[0]);
+                setStartTime(startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+                setEndTime(endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+                setColor(initialEvent.color);
+            } else if (initialDate) {
+                setDate(initialDate.toISOString().split('T')[0]);
+                setTitle('');
+                setStartTime('09:00');
+                setEndTime('10:00');
+                setColor(COLORS[0]);
+            }
         }
-    }, [isOpen, initialDate]);
+    }, [isOpen, initialDate, initialEvent]);
 
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({
+            _id: initialEvent?._id,
             title,
             start_time: new Date(`${date}T${startTime}`),
             end_time: new Date(`${date}T${endTime}`),
             color
         });
         onClose();
-        // Reset form
-        setTitle('');
-        setStartTime('09:00');
-        setEndTime('10:00');
-        setColor(COLORS[0]);
+    };
+
+    const handleDelete = () => {
+        if (initialEvent && onDelete) {
+            onDelete(initialEvent._id);
+            onClose();
+        }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-card text-card-foreground w-full max-w-md rounded-2xl shadow-2xl border border-border p-6 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold tracking-tight">Add New Event</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">{initialEvent ? 'Edit Event' : 'Add New Event'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-accent rounded-full transition-colors">
                         <X size={20} />
                     </button>
@@ -149,20 +168,34 @@ export default function EventModal({ isOpen, onClose, onSave, initialDate }: Eve
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-end gap-3 pt-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-2.5 rounded-xl font-medium hover:bg-accent text-muted-foreground transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-6 py-2.5 rounded-xl font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-lg shadow-primary/25"
-                        >
-                            Save Event
-                        </button>
+                    <div className="flex items-center justify-between pt-4">
+                        {initialEvent ? (
+                            <button
+                                type="button"
+                                onClick={handleDelete}
+                                className="px-4 py-2.5 rounded-xl font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex items-center gap-2"
+                            >
+                                <Trash2 size={18} />
+                                Delete
+                            </button>
+                        ) : (
+                            <div></div>
+                        )}
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-6 py-2.5 rounded-xl font-medium hover:bg-accent text-muted-foreground transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-6 py-2.5 rounded-xl font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-lg shadow-primary/25"
+                            >
+                                {initialEvent ? 'Update Event' : 'Save Event'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

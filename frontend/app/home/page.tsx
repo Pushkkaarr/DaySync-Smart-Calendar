@@ -62,6 +62,7 @@ export default function HomePage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -91,8 +92,13 @@ export default function HomePage() {
 
     const handleSaveEvent = async (eventData: any) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events`, {
-                method: 'POST',
+            const method = eventData._id ? 'PUT' : 'POST';
+            const url = eventData._id
+                ? `${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventData._id}`
+                : `${process.env.NEXT_PUBLIC_BACKEND}/api/events`;
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventData),
             });
@@ -101,6 +107,19 @@ export default function HomePage() {
             }
         } catch (error) {
             console.error("Failed to save event", error);
+        }
+    };
+
+    const handleDeleteEvent = async (eventId: string) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventId}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                fetchEvents();
+            }
+        } catch (error) {
+            console.error("Failed to delete event", error);
         }
     };
 
@@ -221,9 +240,14 @@ export default function HomePage() {
         <div className="flex h-screen w-full bg-background text-foreground font-['Georgia'] overflow-hidden selection:bg-primary/20">
             <EventModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedEvent(null);
+                }}
                 onSave={handleSaveEvent}
+                onDelete={handleDeleteEvent}
                 initialDate={selectedDate}
+                initialEvent={selectedEvent}
             />
 
             {(isMonthPickerOpen || isYearPickerOpen) && (
@@ -299,6 +323,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => {
                                     setSelectedDate(new Date());
+                                    setSelectedEvent(null);
                                     setIsModalOpen(true);
                                 }}
                                 className={cn(
@@ -458,7 +483,7 @@ export default function HomePage() {
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 p-8 pt-6 overflow-hidden flex flex-col">
+                <div className="flex-1 p-8 pt-6 overflow-y-auto overflow-x-hidden flex flex-col">
 
                     {/* View: Monthly */}
                     {view === 'monthly' && (
@@ -470,13 +495,14 @@ export default function HomePage() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex-1 grid grid-cols-7 grid-rows-6 gap-3">
+                            <div className="flex-1 grid grid-cols-7 grid-rows-6 gap-3 min-h-[800px]">
                                 {generateMonthlyGrid().map((cell) => (
                                     <div
                                         key={cell.key}
                                         onClick={() => {
                                             if (cell.type === 'current' && cell.date) {
                                                 setSelectedDate(cell.date);
+                                                setSelectedEvent(null);
                                                 setIsModalOpen(true);
                                             }
                                         }}
@@ -500,21 +526,21 @@ export default function HomePage() {
                                         </div>
 
                                         {/* Events List */}
-                                        <div className="flex flex-col gap-1 mt-1 overflow-hidden">
-                                            {cell.events?.slice(0, 3).map((event) => (
+                                        <div className="flex flex-col gap-1 mt-1 overflow-y-auto max-h-[80px] scrollbar-hide">
+                                            {cell.events?.map((event) => (
                                                 <div
                                                     key={event._id}
-                                                    className="text-[10px] px-1.5 py-0.5 rounded-md truncate font-medium text-white shadow-sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedEvent(event);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                    className="text-[10px] px-1.5 py-0.5 rounded-md truncate font-medium text-white shadow-sm hover:opacity-80 transition-opacity"
                                                     style={{ backgroundColor: event.color }}
                                                 >
                                                     {event.title}
                                                 </div>
                                             ))}
-                                            {cell.events && cell.events.length > 3 && (
-                                                <div className="text-[10px] text-muted-foreground pl-1">
-                                                    +{cell.events.length - 3} more
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -532,13 +558,14 @@ export default function HomePage() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-7 gap-3 h-full">
+                            <div className="grid grid-cols-7 gap-3 h-full min-h-[600px]">
                                 {generateWeeklyGrid().map((cell) => (
                                     <div
                                         key={cell.key}
                                         onClick={() => {
                                             if (cell.fullDate) {
                                                 setSelectedDate(cell.fullDate);
+                                                setSelectedEvent(null);
                                                 setIsModalOpen(true);
                                             }
                                         }}
@@ -564,7 +591,12 @@ export default function HomePage() {
                                                 cell.events.map((event) => (
                                                     <div
                                                         key={event._id}
-                                                        className="p-2 rounded-lg text-xs font-medium text-white shadow-sm flex flex-col gap-0.5"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedEvent(event);
+                                                            setIsModalOpen(true);
+                                                        }}
+                                                        className="p-2 rounded-lg text-xs font-medium text-white shadow-sm flex flex-col gap-0.5 hover:opacity-80 transition-opacity"
                                                         style={{ backgroundColor: event.color }}
                                                     >
                                                         <span className="truncate font-bold">{event.title}</span>
