@@ -24,7 +24,7 @@ interface EventModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (eventData: any) => void;
-    onDelete?: (eventId: string) => void;
+    onDelete?: (eventId: string, deleteType?: 'single' | 'series') => void;
     initialDate?: Date;
     initialEvent?: any;
 }
@@ -43,6 +43,7 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
     const [endTime, setEndTime] = useState('10:00');
     const [recurrence, setRecurrence] = useState('none');
     const [color, setColor] = useState(COLORS[0]);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -80,9 +81,9 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
         onClose();
     };
 
-    const handleDelete = () => {
+    const handleDelete = (type: 'single' | 'series' = 'single') => {
         if (initialEvent && onDelete) {
-            onDelete(initialEvent._id);
+            onDelete(initialEvent._id, type);
             onClose();
         }
     };
@@ -220,14 +221,45 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-4">
                         {initialEvent ? (
-                            <button
-                                type="button"
-                                onClick={handleDelete}
-                                className="px-4 py-2.5 rounded-xl font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex items-center gap-2"
-                            >
-                                <Trash2 size={18} />
-                                Delete
-                            </button>
+                            <div className="relative">
+                                {showDeleteConfirm ? (
+                                    <div className="absolute bottom-full left-0 mb-2 p-2 bg-card border border-border rounded-xl shadow-xl z-50 flex flex-col gap-2 min-w-[200px] animate-in slide-in-from-bottom-2">
+                                        <p className="text-xs font-semibold text-muted-foreground px-2">Delete Event?</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDelete('single')}
+                                            className="text-left px-3 py-2 text-sm hover:bg-accent rounded-lg transition-colors text-destructive"
+                                        >
+                                            Delete Only This Event
+                                        </button>
+                                        {initialEvent.recurrenceGroupId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete('series')}
+                                                className="text-left px-3 py-2 text-sm hover:bg-accent rounded-lg transition-colors text-destructive font-medium"
+                                            >
+                                                Delete Entire Series
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            className="text-left px-3 py-2 text-sm hover:bg-accent rounded-lg transition-colors text-muted-foreground border-t border-border/50 mt-1"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="px-4 py-2.5 rounded-xl font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex items-center gap-2"
+                                    >
+                                        <Trash2 size={18} />
+                                        Delete
+                                    </button>
+                                )}
+                            </div>
                         ) : (
                             <div></div>
                         )}

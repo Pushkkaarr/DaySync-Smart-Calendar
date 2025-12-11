@@ -154,12 +154,16 @@ export default function HomePage() {
         }
     }, [fetchEvents]);
 
-    const handleDeleteEvent = React.useCallback(async (eventId: string) => {
+    const handleDeleteEvent = React.useCallback(async (eventId: string, deleteType?: 'single' | 'series') => {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventId}`, {
+            const url = deleteType
+                ? `${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventId}?deleteType=${deleteType}`
+                : `${process.env.NEXT_PUBLIC_BACKEND}/api/events/${eventId}`;
+
+            const res = await fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

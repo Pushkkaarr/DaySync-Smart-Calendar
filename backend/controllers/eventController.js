@@ -118,6 +118,7 @@ exports.updateEvent = async (req, res) => {
 exports.deleteEvent = async (req, res) => {
     try {
         const { id } = req.params;
+        const { deleteType } = req.query; // 'single' or 'series'
 
         // Verify the event belongs to the user
         const event = await Event.findOne({ _id: id, userId: req.user._id });
@@ -125,8 +126,18 @@ exports.deleteEvent = async (req, res) => {
             return res.status(404).json({ message: 'Event not found or unauthorized' });
         }
 
-        await Event.findByIdAndDelete(id);
-        res.status(200).json({ message: 'Event deleted successfully' });
+        if (deleteType === 'series' && event.recurrenceGroupId) {
+            // Delete all events with the same recurrenceGroupId
+            await Event.deleteMany({
+                recurrenceGroupId: event.recurrenceGroupId,
+                userId: req.user._id
+            });
+            res.status(200).json({ message: 'Event series deleted successfully' });
+        } else {
+            // Delete single event
+            await Event.findByIdAndDelete(id);
+            res.status(200).json({ message: 'Event deleted successfully' });
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
