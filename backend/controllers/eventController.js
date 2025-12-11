@@ -1,9 +1,12 @@
 const Event = require('../models/Event');
 
+const sendEmail = require('../utils/emailService'); // Import email service
+
 exports.createEvent = async (req, res) => {
     try {
         const { title, start_time, end_time, color, recurrencePattern } = req.body;
         const userId = req.user._id;
+        const userEmail = req.user.email; // Assuming auth middleware populates this
 
         // Base event data
         const baseEventData = {
@@ -13,6 +16,8 @@ exports.createEvent = async (req, res) => {
             recurrencePattern: recurrencePattern || 'none'
         };
 
+        let createdEventForMail = null;
+
         if (!recurrencePattern || recurrencePattern === 'none') {
             const newEvent = new Event({
                 ...baseEventData,
@@ -20,56 +25,66 @@ exports.createEvent = async (req, res) => {
                 end_time
             });
             await newEvent.save();
-            return res.status(201).json(newEvent);
-        }
+            createdEventForMail = newEvent;
+            res.status(201).json(newEvent);
+        } else {
+            // ... (Recurrence logic remains the same) ...
+            // Handle Recurrence
+            const eventsToCreate = [];
+            const recurrenceGroupId = new Date().getTime().toString() + Math.random().toString(36).substring(7);
 
-        // Handle Recurrence
-        const eventsToCreate = [];
-        const recurrenceGroupId = new Date().getTime().toString() + Math.random().toString(36).substring(7);
-
-        // Limits
-        const MAX_YEARS = 1;
-        const startDate = new Date(start_time);
-        const endDate = new Date(end_time);
-        const duration = endDate.getTime() - startDate.getTime();
-
-        const limitDate = new Date(startDate);
-        limitDate.setFullYear(limitDate.getFullYear() + MAX_YEARS);
-
-        let currentStart = new Date(startDate);
-
-        while (currentStart < limitDate) {
-            eventsToCreate.push({
-                ...baseEventData,
-                start_time: new Date(currentStart),
-                end_time: new Date(currentStart.getTime() + duration),
-                recurrenceGroupId
-            });
-
-            // Advance date
+            // Limits
+            let maxOccurrences = 0;
             switch (recurrencePattern) {
-                case 'daily':
-                    currentStart.setDate(currentStart.getDate() + 1);
-                    break;
-                case 'weekly':
-                    currentStart.setDate(currentStart.getDate() + 7);
-                    break;
-                case 'monthly':
-                    currentStart.setMonth(currentStart.getMonth() + 1);
-                    break;
-                case 'yearly':
-                    currentStart.setFullYear(currentStart.getFullYear() + 1);
-                    break;
-                default:
-                    currentStart = limitDate; // Break loop
+                case 'daily': maxOccurrences = 365; break;  // 1 Year
+                case 'weekly': maxOccurrences = 52; break;  // 1 Year
+                case 'monthly': maxOccurrences = 12; break; // 1 Year
+                case 'yearly': maxOccurrences = 10; break;  // 10 Years
+                default: maxOccurrences = 1;
             }
+
+            const startDate = new Date(start_time);
+            const endDate = new Date(end_time);
+            const duration = endDate.getTime() - startDate.getTime();
+
+            console.log(`Generating ${maxOccurrences} instances for pattern: ${recurrencePattern}`);
+
+            let currentStart = new Date(startDate);
+            let count = 0;
+
+            while (count < maxOccurrences) {
+                eventsToCreate.push({
+                    ...baseEventData,
+                    start_time: new Date(currentStart),
+                    end_time: new Date(currentStart.getTime() + duration),
+                    recurrenceGroupId
+                });
+
+                // Advance date (same switch logic as before)
+                switch (recurrencePattern) {
+                    case 'daily': currentStart.setDate(currentStart.getDate() + 1); break;
+                    case 'weekly': currentStart.setDate(currentStart.getDate() + 7); break;
+                    case 'monthly':
+                        const d = currentStart.getDate();
+                        currentStart.setMonth(currentStart.getMonth() + 1);
+                        if (currentStart.getDate() !== d) currentStart.setDate(0);
+                        break;
+                    case 'yearly': currentStart.setFullYear(currentStart.getFullYear() + 1); break;
+                }
+                count++;
+            }
+
+            // Bulk insert for efficiency
+            const createdEvents = await Event.insertMany(eventsToCreate);
+            res.status(201).json(createdEvents[0]);
         }
 
-        // Bulk insert for efficiency
-        const createdEvents = await Event.insertMany(eventsToCreate);
-        res.status(201).json(createdEvents[0]); // Return the first one as confirmation
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Create Event Error:", error);
+        // If response hasn't been sent yet
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
 

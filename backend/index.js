@@ -35,6 +35,8 @@ const { connectDB } = require('./config/db');
 
 // Connect to MongoDB
 connectDB();
+const startReminderService = require('./utils/reminderService');
+startReminderService();
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
@@ -43,6 +45,8 @@ app.use('/api/auth', authRoutes);
 
 
 app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+
     // Keep-alive ping to prevent Render app from sleeping
     const url = process.env.B_LINK; // Your Render app URL
     const interval = 13 * 60 * 1000; // 13 minutes
