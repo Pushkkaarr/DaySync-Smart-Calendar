@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      const currentPath = window.location.pathname;
-      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-      const target = basePath ? `${basePath}/home.html` : '/home';
-      window.location.href = target;
-    }
-  }, []);
+  // Auto-redirect removed to allow users to see the landing page first
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   if (token) {
+  //     const currentPath = window.location.pathname;
+  //     const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+  //     const target = basePath ? `${basePath}/home.html` : '/home';
+  //     window.location.href = target;
+  //   }
+  // }, []);
 
   const handleGetStarted = () => {
     const token = localStorage.getItem('token');

@@ -2,16 +2,72 @@ const Event = require('../models/Event');
 
 exports.createEvent = async (req, res) => {
     try {
-        const { title, start_time, end_time, color } = req.body;
-        const newEvent = new Event({
-            userId: req.user._id,
+        const { title, start_time, end_time, color, recurrencePattern } = req.body;
+        const userId = req.user._id;
+
+        // Base event data
+        const baseEventData = {
+            userId,
             title,
-            start_time,
-            end_time,
-            color
-        });
-        await newEvent.save();
-        res.status(201).json(newEvent);
+            color,
+            recurrencePattern: recurrencePattern || 'none'
+        };
+
+        if (!recurrencePattern || recurrencePattern === 'none') {
+            const newEvent = new Event({
+                ...baseEventData,
+                start_time,
+                end_time
+            });
+            await newEvent.save();
+            return res.status(201).json(newEvent);
+        }
+
+        // Handle Recurrence
+        const eventsToCreate = [];
+        const recurrenceGroupId = new Date().getTime().toString() + Math.random().toString(36).substring(7);
+
+        // Limits
+        const MAX_YEARS = 1;
+        const startDate = new Date(start_time);
+        const endDate = new Date(end_time);
+        const duration = endDate.getTime() - startDate.getTime();
+
+        const limitDate = new Date(startDate);
+        limitDate.setFullYear(limitDate.getFullYear() + MAX_YEARS);
+
+        let currentStart = new Date(startDate);
+
+        while (currentStart < limitDate) {
+            eventsToCreate.push({
+                ...baseEventData,
+                start_time: new Date(currentStart),
+                end_time: new Date(currentStart.getTime() + duration),
+                recurrenceGroupId
+            });
+
+            // Advance date
+            switch (recurrencePattern) {
+                case 'daily':
+                    currentStart.setDate(currentStart.getDate() + 1);
+                    break;
+                case 'weekly':
+                    currentStart.setDate(currentStart.getDate() + 7);
+                    break;
+                case 'monthly':
+                    currentStart.setMonth(currentStart.getMonth() + 1);
+                    break;
+                case 'yearly':
+                    currentStart.setFullYear(currentStart.getFullYear() + 1);
+                    break;
+                default:
+                    currentStart = limitDate; // Break loop
+            }
+        }
+
+        // Bulk insert for efficiency
+        const createdEvents = await Event.insertMany(eventsToCreate);
+        res.status(201).json(createdEvents[0]); // Return the first one as confirmation
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

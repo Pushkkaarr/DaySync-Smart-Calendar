@@ -48,6 +48,8 @@ interface Event {
     start_time: string;
     end_time: string;
     color: string;
+    recurrencePattern?: string;
+    recurrenceGroupId?: string;
 }
 
 export default function HomePage() {
@@ -76,12 +78,20 @@ export default function HomePage() {
     }, [theme]);
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+            const target = basePath ? `${basePath}/login.html` : '/login';
+            window.location.href = target;
+            return;
+        }
         setMounted(true);
         setToday(new Date());
         fetchEvents();
     }, []);
 
-    const fetchEvents = async () => {
+    const fetchEvents = React.useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -95,7 +105,7 @@ export default function HomePage() {
                 }
             });
             if (res.ok) {
-                const data = await res.json();
+                const data: Event[] = await res.json();
                 setEvents(data);
             } else if (res.status === 401) {
                 // Token invalid, redirect to login
@@ -109,9 +119,9 @@ export default function HomePage() {
         } catch (error) {
             console.error("Failed to fetch events", error);
         }
-    };
+    }, []);
 
-    const handleSaveEvent = async (eventData: any) => {
+    const handleSaveEvent = React.useCallback(async (eventData: Partial<Event>) => {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
@@ -142,9 +152,9 @@ export default function HomePage() {
         } catch (error) {
             console.error("Failed to save event", error);
         }
-    };
+    }, [fetchEvents]);
 
-    const handleDeleteEvent = async (eventId: string) => {
+    const handleDeleteEvent = React.useCallback(async (eventId: string) => {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
@@ -168,36 +178,36 @@ export default function HomePage() {
         } catch (error) {
             console.error("Failed to delete event", error);
         }
-    };
+    }, [fetchEvents]);
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
     // --- Navigation Handlers ---
-    const handlePrev = () => {
+    const handlePrev = React.useCallback(() => {
         if (view === 'monthly') {
-            setCurrentDate(new Date(year, month - 1, 1));
+            setCurrentDate((d: Date) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
         } else if (view === 'weekly') {
-            setCurrentDate(new Date(year, month, currentDate.getDate() - 7));
+            setCurrentDate((d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7));
         } else {
-            setCurrentDate(new Date(year - 1, month, 1));
+            setCurrentDate((d: Date) => new Date(d.getFullYear() - 1, d.getMonth(), 1));
         }
-    };
+    }, [view]);
 
-    const handleNext = () => {
+    const handleNext = React.useCallback(() => {
         if (view === 'monthly') {
-            setCurrentDate(new Date(year, month + 1, 1));
+            setCurrentDate((d: Date) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
         } else if (view === 'weekly') {
-            setCurrentDate(new Date(year, month, currentDate.getDate() + 7));
+            setCurrentDate((d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7));
         } else {
-            setCurrentDate(new Date(year + 1, month, 1));
+            setCurrentDate((d: Date) => new Date(d.getFullYear() + 1, d.getMonth(), 1));
         }
-    };
+    }, [view]);
 
-    const handleToday = () => {
+    const handleToday = React.useCallback(() => {
         setCurrentDate(new Date());
         setView('monthly');
-    };
+    }, []);
 
     const isSameDay = (d1: Date, d2: Date | null) => {
         if (!d2) return false;

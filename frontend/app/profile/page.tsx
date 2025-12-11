@@ -42,6 +42,15 @@ export default function ProfilePage() {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+            const target = basePath ? `${basePath}/login.html` : '/login';
+            window.location.href = target;
+            return;
+        }
+
         const userData = localStorage.getItem('user');
         if (userData) {
             const parsed = JSON.parse(userData);

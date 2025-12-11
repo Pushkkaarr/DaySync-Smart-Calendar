@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Calendar as CalendarIcon, Check, Trash2 } from 'lucide-react';
+import { X, Clock, Calendar as CalendarIcon, Check, Trash2, Repeat } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -41,6 +41,7 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
     const [date, setDate] = useState('');
     const [startTime, setStartTime] = useState('09:00');
     const [endTime, setEndTime] = useState('10:00');
+    const [recurrence, setRecurrence] = useState('none');
     const [color, setColor] = useState(COLORS[0]);
 
     useEffect(() => {
@@ -58,6 +59,7 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                 setTitle('');
                 setStartTime('09:00');
                 setEndTime('10:00');
+                setRecurrence('none');
                 setColor(COLORS[0]);
             }
         }
@@ -72,6 +74,7 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
             title,
             start_time: new Date(`${date}T${startTime}`),
             end_time: new Date(`${date}T${endTime}`),
+            recurrencePattern: recurrence,
             color
         });
         onClose();
@@ -151,6 +154,46 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                                 <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Recurrence */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <Clock size={14} /> Repeat
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {['none', 'daily', 'weekly', 'monthly', 'yearly'].map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setRecurrence(type)}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-sm font-medium border transition-all",
+                                        recurrence === type
+                                            ? "bg-primary text-primary-foreground border-primary"
+                                            : "bg-background border-border hover:bg-accent text-muted-foreground"
+                                    )}
+                                >
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                        {recurrence !== 'none' && date && (
+                            <p className="text-xs text-muted-foreground mt-2 font-medium bg-muted/50 px-3 py-2 rounded-lg border border-border/50">
+                                {(() => {
+                                    const d = new Date(date + 'T00:00:00'); // Force local time
+                                    const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+                                    const dayNum = d.getDate();
+                                    const monthName = d.toLocaleDateString('en-US', { month: 'long' });
+
+                                    if (recurrence === 'daily') return 'Event will repeat every day';
+                                    if (recurrence === 'weekly') return `Event will repeat every ${dayName}`;
+                                    if (recurrence === 'monthly') return `Event will repeat monthly on the ${dayNum}th`;
+                                    if (recurrence === 'yearly') return `Event will repeat annually on ${monthName} ${dayNum}`;
+                                    return '';
+                                })()}
+                            </p>
+                        )}
                     </div>
 
                     {/* Color */}
