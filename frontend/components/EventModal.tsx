@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Clock, Calendar as CalendarIcon, Check, Trash2, Repeat } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import ClockPicker from './ClockPicker';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -45,6 +46,9 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
     const [color, setColor] = useState(COLORS[0]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+    // Clock Picker State
+    const [clockPickerType, setClockPickerType] = useState<'start' | 'end' | null>(null);
+
     useEffect(() => {
         if (isOpen) {
             if (initialEvent) {
@@ -65,6 +69,18 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
             }
         }
     }, [isOpen, initialDate, initialEvent]);
+
+    const handleClockSave = (time: string) => {
+        if (clockPickerType === 'start') {
+            setStartTime(time);
+            if (endTime < time) {
+                setEndTime(time);
+            }
+        } else if (clockPickerType === 'end') {
+            setEndTime(time);
+        }
+        setClockPickerType(null);
+    };
 
     if (!isOpen) return null;
 
@@ -131,36 +147,32 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-muted-foreground">Start Time</label>
-                            <div className="relative">
-                                <input
-                                    type="time"
-                                    required
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                    className="w-full px-4 py-3 pl-11 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                />
-                                <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setClockPickerType('start')}
+                                className="flex items-center w-full px-4 py-3 rounded-xl bg-muted/50 border border-border hover:border-primary/50 transition-all text-left"
+                            >
+                                <Clock size={18} className="mr-2 text-muted-foreground" />
+                                <span>{startTime}</span>
+                            </button>
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-muted-foreground">End Time</label>
-                            <div className="relative">
-                                <input
-                                    type="time"
-                                    required
-                                    value={endTime}
-                                    onChange={(e) => setEndTime(e.target.value)}
-                                    className="w-full px-4 py-3 pl-11 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                />
-                                <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setClockPickerType('end')}
+                                className="flex items-center w-full px-4 py-3 rounded-xl bg-muted/50 border border-border hover:border-primary/50 transition-all text-left"
+                            >
+                                <Clock size={18} className="mr-2 text-muted-foreground" />
+                                <span>{endTime}</span>
+                            </button>
                         </div>
                     </div>
 
                     {/* Recurrence */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <Clock size={14} /> Repeat
+                            <Repeat size={14} /> Repeat
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {['none', 'daily', 'weekly', 'monthly', 'yearly'].map((type) => (
@@ -280,6 +292,16 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
                         </div>
                     </div>
                 </form>
+
+                {/* Clock Picker Modal */}
+                {clockPickerType && (
+                    <ClockPicker
+                        isOpen={!!clockPickerType}
+                        onClose={() => setClockPickerType(null)}
+                        onSave={handleClockSave}
+                        initialTime={clockPickerType === 'start' ? startTime : endTime}
+                    />
+                )}
             </div>
         </div>
     );
