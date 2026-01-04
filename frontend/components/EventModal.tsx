@@ -86,11 +86,17 @@ export default function EventModal({ isOpen, onClose, onSave, onDelete, initialD
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Properly format dates to ISO strings with correct timezone handling
+        const startDateTime = new Date(`${date}T${startTime}:00`);
+        const endDateTime = new Date(`${date}T${endTime}:00`);
+        
+        
         onSave({
             _id: initialEvent?._id,
             title,
-            start_time: new Date(`${date}T${startTime}`),
-            end_time: new Date(`${date}T${endTime}`),
+            start_time: startDateTime.toISOString(),
+            end_time: endDateTime.toISOString(),
             recurrencePattern: recurrence,
             color
         });

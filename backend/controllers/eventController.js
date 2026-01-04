@@ -21,11 +21,13 @@ exports.createEvent = async (req, res) => {
         if (!recurrencePattern || recurrencePattern === 'none') {
             const newEvent = new Event({
                 ...baseEventData,
-                start_time,
-                end_time
+                start_time: new Date(start_time),
+                end_time: new Date(end_time)
             });
             await newEvent.save();
             createdEventForMail = newEvent;
+            
+            
             res.status(201).json(newEvent);
         } else {
             // ... (Recurrence logic remains the same) ...
@@ -76,11 +78,16 @@ exports.createEvent = async (req, res) => {
 
             // Bulk insert for efficiency
             const createdEvents = await Event.insertMany(eventsToCreate);
+                  
             res.status(201).json(createdEvents[0]);
         }
 
     } catch (error) {
-        console.error("Create Event Error:", error);
+        console.error("❌ Create Event Error:", error);
+        console.error("Error details:", {
+            message: error.message,
+            stack: error.stack
+        });
         // If response hasn't been sent yet
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
